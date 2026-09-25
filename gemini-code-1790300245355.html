@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sổ Tay Tuyên Truyền: Sử Dụng AI Có Trách Nhiệm & An Toàn Bảo Mật</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;500;600;700;800&family=Roboto+Slab:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary-color: #1e3a8a;
+      --primary-light: #3b82f6;
+      --secondary-color: #0f766e;
+      --accent-color: #d97706;
+      --bg-wood: #111827;
+      --paper-color: #fdfbf7;
+      --paper-border: #e2d8c3;
+      --text-dark: #1f2937;
+      --text-muted: #4b5563;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --correct-color: #16a34a;
+      --wrong-color: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto Slab', serif;
+      background-color: var(--bg-wood);
+      background-image: 
+        radial-gradient(at 50% 0%, rgba(30, 58, 138, 0.3) 0px, transparent 70%),
+        radial-gradient(at 100% 100%, rgba(15, 118, 110, 0.2) 0px, transparent 50%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow-x: hidden;
+      padding: 15px;
+    }
+
+    /* Thanh Header điều khiển */
+    header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    header .logo {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+
+    /* Khung Flipbook 3D */
+    .viewport {
+      width: 100%;
+      max-width: 1100px;
+      height: 800px;
+      perspective: 2000px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .book {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.5s ease;
+      transform-style: preserve-3d;
+    }
+
+    .page {
+      width: 50%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      background-color: var(--paper-color);
+      border: 1px solid var(--paper-border);
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+      overflow-y: auto;
+      padding: 28px 24px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      backface-visibility: hidden;
+      transform-origin: left center;
+      transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    /* Custom Scrollbar cho từng trang */
+    .page::-webkit-scrollbar {
+      width: 6px;
+    }
+    .page::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.03);
+    }
+    .page::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.15);
+      border-radius: 3px;
+    }
+
+    .page.left {
+      left: 0;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: 2px solid rgba(0, 0, 0, 0.15);
+      box-shadow: -10px 10px 20px rgba(0, 0, 0, 0.2), inset -15px 0 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .page.right {
+      right: 0;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.2), inset 15px 0 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .page.active {
+      display: flex;
+      z-index: 2;
+    }
+
+    /* Gáy sách ở giữa */
+    .book::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 16px;
+      height: 100%;
+      transform: translateX(-50%);
+      background: linear-gradient(to right, 
+        rgba(0,0,0,0.25) 0%, 
+        rgba(0,0,0,0.05) 40%, 
+        rgba(0,0,0,0.05) 60%, 
+        rgba(0,0,0,0.25) 100%);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* TRANG BÌA SỔ TAY */
+    .cover-page {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: #fff;
+      text-align: center;
+      justify-content: center !important;
+      align-items: center;
+      border: 3px solid #3b82f6;
+      padding: 40px 30px !important;
+    }
+
+    .cover-border {
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      padding: 30px 20px;
+      border-radius: 12px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .cover-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #f3f4f6;
+      line-height: 1.3;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .cover-subtitle {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2rem;
+      color: #f59e0b;
+      margin-top: -10px;
+    }
+
+    .cover-badge {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .cover-quote {
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #93c5fd;
+      border-left: 3px solid #f59e0b;
+      padding-left: 12px;
+      margin-top: 15px;
+      text-align: left;
+    }
+
+    /* ĐỊNH DẠNG TRANG NỘI DUNG */
+    .page-header {
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .rule-number {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.8rem;
+      background: var(--primary-color);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .rule-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--primary-color);
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    .content-box {
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .box-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--secondary-color);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    p, li {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--text-dark);
+    }
+
+    ul {
+      padding-left: 18px;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    /* KHUNG CÂU NHỚ NỔI BẬT */
+    .remember-box {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid var(--accent-color);
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin: 12px 0;
+      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.15);
+    }
+
+    .remember-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #b45309;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .remember-text {
+      font-family: 'Roboto Slab', serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #78350f;
+      margin-top: 2px;
+    }
+
+    /* TÊU ĐỀ PHẦN ĐA PHƯƠNG TIỆN */
+    .media-section-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin: 14px 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 4px;
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .media-slot {
+      border: 2px dashed #cbd5e1;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      position: relative;
+      transition: all 0.2s ease;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .media-slot:hover {
+      border-color: var(--primary-light);
+      background: #eff6ff;
+    }
+
+    .media-slot i.slot-icon {
+      font-size: 1.5rem;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .media-slot p.slot-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+    }
+
+    .media-slot input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .media-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .media-slot.has-file .slot-content {
+      display: none;
+    }
+
+    .media-slot.has-file .media-preview {
+      display: block;
+    }
+
+    .remove-media-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(220, 38, 38, 0.85);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 10px;
+      cursor: pointer;
+      display: none;
+      z-index: 5;
+    }
+
+    .media-slot.has-file .remove-media-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Ô CHÈN VIDEO TỈ LỆ LỚN & CĂN GIỮA */
+    .video-container-box {
+      width: 100%;
+      max-width: 100%;
+      margin: 12px auto 16px auto;
+      background: #f1f5f9;
+      border: 2px dashed #94a3b8;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-container-box:hover {
+      border-color: var(--primary-light);
+      background: #f0f7ff;
+    }
+
+    /* ĐẶC BIỆT: Ô VIDEO SIÊU LỚN CHO TRANG 9 */
+    .extra-large-video-box {
+      border: 2.5px dashed var(--primary-light);
+      background: #eff6ff;
+      padding: 16px;
+      margin: 15px 0 20px 0;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+    }
+
+    .video-input-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .tab-btn {
+      background: #e2e8f0;
+      color: #475569;
+      border: none;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .video-input-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .video-url-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      outline: none;
+      font-family: 'Roboto Slab', serif;
+    }
+
+    .video-url-input:focus {
+      border-color: var(--primary-light);
+    }
+
+    .video-player-wrapper {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 8px;
+      display: none;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .video-player-wrapper.active {
+      display: block;
+    }
+
+    .video-player-wrapper video, 
+    .video-player-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* PHẦN CÂU HỎI ỨNG XỬ & CÁC LỰA CHỌN TRẢ LỜI RÕ RÀNG */
+    .scenario-box {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .scenario-header {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #15803d;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .question-text {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #166534;
+      margin-bottom: 12px;
+      line-height: 1.4;
+      background: #ffffff;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border-left: 4px solid #22c55e;
+    }
+
+    .options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-btn {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      text-align: left;
+      font-family: 'Roboto Slab', serif;
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      position: relative;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary-light);
+      background: #f8fafc;
+      transform: translateX(2px);
+    }
+
+    .option-btn .opt-key {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.75rem;
+      background: #e2e8f0;
+      color: #334155;
+      padding: 2px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .option-btn.selected-correct {
+      background: #dcfce7;
+      border-color: var(--correct-color);
+      color: #14532d;
+    }
+
+    .option-btn.selected-correct .opt-key {
+      background: var(--correct-color);
+      color: white;
+    }
+
+    .option-btn.selected-wrong {
+      background: #fee2e2;
+      border-color: var(--wrong-color);
+      color: #7f1d1d;
+    }
+
+    .option-btn.selected-wrong .opt-key {
+      background: var(--wrong-color);
+      color: white;
+    }
+
+    .feedback-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      display: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+    }
+
+    .feedback-box.correct {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .feedback-box.wrong {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    /* CHÂN TRANG & NÚT ĐIỀU HƯỚNG */
+    .page-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      margin-top: auto;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .navigation-bar {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding: 8px 15px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .page-indicator {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .page-selector {
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .page-selector option {
+      background: #1e293b;
+      color: white;
+    }
+
+    /* ĐỊNH DẠNG TRANG KỊCH BẢN */
+    .script-character {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-right: 4px;
+    }
+
+    .script-line {
+      margin-bottom: 8px;
+      padding-left: 10px;
+      border-left: 2px solid #cbd5e1;
+    }
+
+    .script-scene {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      font-family: 'Montserrat', sans-serif;
+      margin: 10px 0 6px 0;
+    }
+
+    /* RESPONSIVE CHO MÀN HÌNH NHỎ */
+    @media (max-width: 900px) {
+      .viewport {
+        height: auto;
+        min-height: 650px;
+      }
+
+      .book {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .page {
+        width: 100% !important;
+        position: relative !important;
+        display: none !important;
+        height: auto;
+        min-height: 600px;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+      }
+
+      .page.active {
+        display: flex !important;
+      }
+
+      .book::before {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER ĐIỀU HƯỚNG -->
+  <header>
+    <div class="logo">
+      <i class="fa-solid fa-book-open-reader"></i>
+      <span>SỔ TAY TRÍ TUỆ NHÂN TẠO (AI)</span>
+    </div>
+    <div class="controls">
+      <button class="btn" onclick="toggleOverview()"><i class="fa-solid fa-list-ul"></i> Mục Lục</button>
+      <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> In / Xuất PDF</button>
+    </div>
+  </header>
+
+  <!-- FLIPBOOK CONTAINER -->
+  <div class="viewport">
+    <div class="book" id="handbook">
+
+      <!-- ================= PAGE 1: TRANG BÌA TRƯỚC ================= -->
+      <div class="page left cover-page active" id="page-1">
+        <div class="cover-border">
+          <div class="cover-badge">DỰ ÁN KHUYẾN HỌC & BẢO MẬT 2026</div>
+          <h1 class="cover-title">SỬ DỤNG AI CÓ TRÁCH NHIỆM VÀ AN TOÀN BẢO MẬT</h1>
+          <div class="cover-subtitle">Sổ Tay Tuyên Truyền 7 Quy Tắc</div>
+          <p style="color: #cbd5e1; font-size: 0.85rem; max-width: 80%;">Dành cho học sinh & nghiên cứu sinh trong kỷ nguyên trí tuệ nhân tạo</p>
+          <div class="cover-quote">
+            “Đừng chỉ hỏi AI có thể làm gì.<br>Hãy hỏi: Mình có nên để AI làm điều đó không?”
+          </div>
+          <div style="margin-top: 20px; font-size: 0.75rem; color: #94a3b8;">
+            <i class="fa-solid fa-hand-pointer"></i> Bấm "Trang sau" để bắt đầu khám phá
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 2: TỔNG QUAN & MÔ HÌNH 5 CÂU HỎI ================= -->
+      <div class="page right active" id="page-2">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">TỔNG QUAN DỰ ÁN</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 2</span>
+          </div>
+
+          <div class="content-box">
+            <div class="box-title"><i class="fa-solid fa-triangle-exclamation"></i> 4 Nhóm Vấn Đề Cốt Lõi Khi Dùng AI</div>
+            <ul style="font-size: 0.82rem;">
+              <li><strong>1. Thiên kiến thuật toán:</strong> Dữ liệu thiếu cân bằng dẫn tới kết quả AI thiên vị.</li>
+              <li><strong>2. Bản quyền & SHTT:</strong> Nội dung AI tạo ra có thể xâm phạm bản quyền tác giả.</li>
+              <li><strong>3. Rò rỉ dữ liệu & Code:</strong> Vô tình lộ API key, mật khẩu, dữ liệu cá nhân khi prompt.</li>
+              <li><strong>4. Deepfake:</strong> Giả mạo khuôn mặt, giọng nói gây lừa đảo và tổn hại danh dự.</li>
+            </ul>
+          </div>
+
+          <div class="content-box" style="background: #f0f9ff; border-color: #bae6fd;">
+            <div class="box-title" style="color: #0369a1;"><i class="fa-solid fa-circle-question"></i> MÔ HÌNH "5 CÂU HỎI TRƯỚC KHI BẤM GỬI"</div>
+            <ol style="padding-left: 18px; font-size: 0.83rem;">
+              <li><strong>DỮ LIỆU:</strong> Tôi có đang đưa thông tin nhạy cảm vào AI không?</li>
+              <li><strong>BẢN QUYỀN:</strong> Nội dung này thuộc về ai? Tôi có quyền dùng không?</li>
+              <li><strong>SỰ THẬT:</strong> AI nói vậy có chắc đúng không?</li>
+              <li><strong>THIÊN KIẾN:</strong> Kết quả này có thể đang thiên lệch không?</li>
+              <li><strong>HẬU QUẢ:</strong> Nếu tôi chia sẻ, ai có thể bị ảnh hưởng?</li>
+            </ol>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">GHI NHỚ CỐT LÕI</div>
+            <div class="remember-text">Nếu chưa trả lời được 5 câu hỏi trên → Chưa nên bấm gửi hoặc sử dụng kết quả từ AI!</div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Sổ tay tuyên truyền AI</span>
+          <span>Trang 2 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 3: QUY TẮC 1 ================= -->
+      <div class="page left" id="page-3">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">QUY TẮC 1</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 3</span>
+          </div>
+
+          <h2 class="rule-title">🔐 DỪNG LẠI TRƯỚC KHI GỬI</h2>
+
+          <div class="content-box" style="margin-top: 10px;">
+            <div class="box-title"><i class="fa-solid fa-circle-exclamation"></i> Vấn đề & Rủi ro</div>
+            <p><strong>Vấn đề:</strong> Người dùng có thói quen đưa trực tiếp dữ liệu vào AI mà không xem xét độ nhạy cảm.</p>
+            <p><strong>Rủi ro:</strong> Lộ mật khẩu, OTP, API key, số điện thoại, dữ liệu sức khỏe, hình ảnh riêng tư của mình hoặc người khác.</p>
+          </div>
+
+          <div class="content-box">
+            <div class="box-title"><i class="fa-solid fa-circle-check"></i> Cách áp dụng & Ví dụ</div>
+            <p>Tạo "khoảng dừng 5 giây" tự hỏi: <em>Dữ liệu này có cần gửi không? Có thể xóa/thay thế bằng thông tin giả lập không?</em></p>
+            <p style="margin-top: 4px;">❌ <strong>Không nên:</strong> Gửi danh sách học sinh có đủ Họ tên, Ngày sinh, SĐT thật.</p>
+            <p>✅ <strong>Nên:</strong> Thay bằng dữ liệu giả lập (Học sinh A, SĐT 0900000000) để nhờ AI phân loại.</p>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">CÂU NHỚ QUY TẮC 1</div>
+            <div class="remember-text">“Không biết dữ liệu đi đâu → đừng gửi nó đi.”</div>
+          </div>
+
+          <!-- Khung ảnh mẫu -->
+          <div class="media-section-title"><i class="fa-solid fa-image"></i> Khung Trống Chèn Ảnh Minh Họa</div>
+          <div class="media-grid">
+            <div class="media-slot" id="slot-r1-img1">
+              <button class="remove-media-btn" onclick="removeMedia('slot-r1-img1')"><i class="fa-solid fa-xmark"></i></button>
+              <div class="slot-content">
+                <i class="fa-solid fa-cloud-arrow-up slot-icon"></i>
+                <p class="slot-label">Thêm ảnh Quy tắc 1</p>
+              </div>
+              <input type="file" accept="image/*" onchange="handleImageUpload(event, 'slot-r1-img1')">
+              <img class="media-preview" alt="Minh họa quy tắc 1">
+            </div>
+          </div>
+
+          <!-- Video Tình huống Centered -->
+          <div class="media-section-title"><i class="fa-solid fa-video"></i> Video Tình Huống Trực Quan</div>
+          <div class="video-container-box" id="vid-box-r1">
+            <div class="video-input-tabs">
+              <button class="tab-btn active" onclick="switchVideoTab('vid-box-r1', 'file')">Tải file video</button>
+              <button class="tab-btn" onclick="switchVideoTab('vid-box-r1', 'url')">Link YouTube</button>
+            </div>
+            <div class="video-input-group file-group">
+              <input type="file" accept="video/*" onchange="handleVideoUpload(event, 'vid-box-r1')" style="font-size: 0.8rem;">
+            </div>
+            <div class="video-input-group url-group" style="display: none;">
+              <input type="text" class="video-url-input" placeholder="Dán link YouTube tại đây..." onchange="handleVideoUrl(this, 'vid-box-r1')">
+            </div>
+            <div class="video-player-wrapper" id="player-vid-box-r1"></div>
+          </div>
+
+          <!-- Câu hỏi ứng xử -->
+          <div class="scenario-box">
+            <div class="scenario-header"><i class="fa-solid fa-circle-question"></i> Tình huống & Câu hỏi ứng xử</div>
+            <div class="question-text">Bạn có một danh sách lớp gồm họ tên và số điện thoại thật. Bạn muốn dùng AI để phân loại nhóm. Bạn sẽ làm gì?</div>
+            <div class="options-group">
+              <button class="option-btn" onclick="checkAnswer(this, false, 'fb-r1', '❌ Bạn đã vi phạm Quy tắc 1! Việc đưa số điện thoại thật lên AI có thể gây rò rỉ thông tin cá nhân.')">
+                <span class="opt-key">A</span>
+                <span>Copy nguyên bảng thông tin thật rồi gửi trực tiếp cho AI xử lý.</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this, true, 'fb-r1', '✅ Chính xác! Bạn đã áp dụng Quy tắc 1: Xóa thông tin nhạy cảm trước khi gửi AI.')">
+                <span class="opt-key">B</span>
+                <span>Thay tên bằng Mã HS (HS1, HS2) và ẩn số điện thoại thật trước khi gửi cho AI.</span>
+              </button>
+            </div>
+            <div class="feedback-box" id="fb-r1"></div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Quy tắc 1</span>
+          <span>Trang 3 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 4: QUY TẮC 2 ================= -->
+      <div class="page right" id="page-4">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">QUY TẮC 2</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 4</span>
+          </div>
+
+          <h2 class="rule-title">💻 MÃ NGUỒN CŨNG LÀ TÀI SẢN</h2>
+
+          <div class="content-box" style="margin-top: 10px;">
+            <div class="box-title"><i class="fa-solid fa-circle-exclamation"></i> Vấn đề & Rủi ro</div>
+            <p><strong>Vấn đề:</strong> Học sinh, sinh viên thường copy toàn bộ code dự án nhờ AI sửa lỗi.</p>
+            <p><strong>Rủi ro:</strong> Mã nguồn chứa API Key, Database URL, Mật khẩu, thuật toán độc quyền dễ bị lộ ra ngoài môi trường Internet.</p>
+          </div>
+
+          <div class="content-box">
+            <div class="box-title"><i class="fa-solid fa-circle-check"></i> Cách áp dụng & Ví dụ</div>
+            <p>Chỉ gửi đoạn code bị lỗi. Thay thế khóa bí mật bằng biến giả định.</p>
+            <p style="margin-top: 4px;">❌ <code>string API_KEY = "sk-proj-9823719827391823";</code></p>
+            <p>✅ <code>string API_KEY = "YOUR_API_KEY_HERE";</code></p>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">CÂU NHỚ QUY TẮC 2</div>
+            <div class="remember-text">“AI cần code để sửa lỗi, không cần bí mật để sửa code.”</div>
+          </div>
+
+          <!-- Khung ảnh mẫu -->
+          <div class="media-section-title"><i class="fa-solid fa-image"></i> Khung Trống Chèn Ảnh</div>
+          <div class="media-grid">
+            <div class="media-slot" id="slot-r2-img1">
+              <button class="remove-media-btn" onclick="removeMedia('slot-r2-img1')"><i class="fa-solid fa-xmark"></i></button>
+              <div class="slot-content">
+                <i class="fa-solid fa-code slot-icon"></i>
+                <p class="slot-label">Ảnh mã nguồn / API</p>
+              </div>
+              <input type="file" accept="image/*" onchange="handleImageUpload(event, 'slot-r2-img1')">
+              <img class="media-preview" alt="Minh họa quy tắc 2">
+            </div>
+          </div>
+
+          <!-- Video Tình huống Centered -->
+          <div class="media-section-title"><i class="fa-solid fa-video"></i> Video Tình Huống</div>
+          <div class="video-container-box" id="vid-box-r2">
+            <div class="video-input-tabs">
+              <button class="tab-btn active" onclick="switchVideoTab('vid-box-r2', 'file')">Tải file video</button>
+              <button class="tab-btn" onclick="switchVideoTab('vid-box-r2', 'url')">Link YouTube</button>
+            </div>
+            <div class="video-input-group file-group">
+              <input type="file" accept="video/*" onchange="handleVideoUpload(event, 'vid-box-r2')" style="font-size: 0.8rem;">
+            </div>
+            <div class="video-input-group url-group" style="display: none;">
+              <input type="text" class="video-url-input" placeholder="Dán link YouTube tại đây..." onchange="handleVideoUrl(this, 'vid-box-r2')">
+            </div>
+            <div class="video-player-wrapper" id="player-vid-box-r2"></div>
+          </div>
+
+          <!-- Câu hỏi ứng xử -->
+          <div class="scenario-box">
+            <div class="scenario-header"><i class="fa-solid fa-circle-question"></i> Tình huống & Câu hỏi ứng xử</div>
+            <div class="question-text">AI yêu cầu bạn gửi toàn bộ thư mục Source Code dự án KHKT (có chứa token Firebase) để kiểm tra tổng thể. Bạn xử lý ra sao?</div>
+            <div class="options-group">
+              <button class="option-btn" onclick="checkAnswer(this, false, 'fb-r2', '❌ Không đúng! Lộ Token Firebase có thể khiến kẻ xấu lợi dụng xóa dữ liệu dự án của bạn.')">
+                <span class="opt-key">A</span>
+                <span>Nén toàn bộ dự án và gửi cho AI để tiết kiệm thời gian.</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this, true, 'fb-r2', '✅ Rất chuẩn! Áp dụng đúng Quy tắc 2: Giữ bí mật khóa API và chỉ gửi hàm bị lỗi.')">
+                <span class="opt-key">B</span>
+                <span>Xóa Token bí mật, chỉ trích xuất đúng hàm đang báo lỗi để nhờ AI hỗ trợ.</span>
+              </button>
+            </div>
+            <div class="feedback-box" id="fb-r2"></div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Quy tắc 2</span>
+          <span>Trang 4 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 5: QUY TẮC 3 ================= -->
+      <div class="page left" id="page-5">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">QUY TẮC 3</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 5</span>
+          </div>
+
+          <h2 class="rule-title">🔎 AI NÓI KHÔNG CÓ NGHĨA LÀ ĐÚNG</h2>
+
+          <div class="content-box" style="margin-top: 10px;">
+            <div class="box-title"><i class="fa-solid fa-circle-exclamation"></i> Vấn đề & Rủi ro</div>
+            <p><strong>Vấn đề:</strong> AI đưa ra câu trả lời rất tự tin nhưng hoàn toàn có thể bịa đặt thông tin (Hallucination).</p>
+            <p><strong>Rủi ro:</strong> Bị trích dẫn số liệu sai, bài nghiên cứu không tồn tại, nhầm lẫn dữ kiện lịch sử hoặc văn bản pháp luật.</p>
+          </div>
+
+          <div class="content-box">
+            <div class="box-title"><i class="fa-solid fa-circle-check"></i> Quy trình áp dụng 4 bước</div>
+            <p style="font-weight: 700; color: var(--primary-color);">AI → KIỂM CHỨNG → ĐỐI CHIẾU → SỬ DỤNG</p>
+            <p>Đối chiếu câu trả lời của AI với SGK, trang web chính thống của chính phủ, hoặc các công trình khoa học có uy tín.</p>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">CÂU NHỚ QUY TẮC 3</div>
+            <div class="remember-text">“AI đưa ra câu trả lời; con người kiểm tra sự thật.”</div>
+          </div>
+
+          <!-- Khung ảnh mẫu -->
+          <div class="media-section-title"><i class="fa-solid fa-image"></i> Khung Trống Chèn Ảnh</div>
+          <div class="media-grid">
+            <div class="media-slot" id="slot-r3-img1">
+              <button class="remove-media-btn" onclick="removeMedia('slot-r3-img1')"><i class="fa-solid fa-xmark"></i></button>
+              <div class="slot-content">
+                <i class="fa-solid fa-magnifying-glass slot-icon"></i>
+                <p class="slot-label">Ảnh kiểm chứng tin tức</p>
+              </div>
+              <input type="file" accept="image/*" onchange="handleImageUpload(event, 'slot-r3-img1')">
+              <img class="media-preview" alt="Minh họa quy tắc 3">
+            </div>
+          </div>
+
+          <!-- Video Tình huống Centered -->
+          <div class="media-section-title"><i class="fa-solid fa-video"></i> Video Tình Huống</div>
+          <div class="video-container-box" id="vid-box-r3">
+            <div class="video-input-tabs">
+              <button class="tab-btn active" onclick="switchVideoTab('vid-box-r3', 'file')">Tải file video</button>
+              <button class="tab-btn" onclick="switchVideoTab('vid-box-r3', 'url')">Link YouTube</button>
+            </div>
+            <div class="video-input-group file-group">
+              <input type="file" accept="video/*" onchange="handleVideoUpload(event, 'vid-box-r3')" style="font-size: 0.8rem;">
+            </div>
+            <div class="video-input-group url-group" style="display: none;">
+              <input type="text" class="video-url-input" placeholder="Dán link YouTube tại đây..." onchange="handleVideoUrl(this, 'vid-box-r3')">
+            </div>
+            <div class="video-player-wrapper" id="player-vid-box-r3"></div>
+          </div>
+
+          <!-- Câu hỏi ứng xử -->
+          <div class="scenario-box">
+            <div class="scenario-header"><i class="fa-solid fa-circle-question"></i> Tình huống & Câu hỏi ứng xử</div>
+            <div class="question-text">AI khẳng định: "Một nghiên cứu năm 2025 chỉ ra 95% học sinh Việt Nam dùng AI để gian lận". Bạn xử lý thông tin này thế nào?</div>
+            <div class="options-group">
+              <button class="option-btn" onclick="checkAnswer(this, false, 'fb-r3', '❌ Sai lầm! AI có thể đang ảo giác hoặc tự bịa ra con số 95%.')">
+                <span class="opt-key">A</span>
+                <span>Trích dẫn ngay vào bài thuyết trình vì AI viết diễn đạt rất thuyết phục.</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this, true, 'fb-r3', '✅ Chính xác! Tuân thủ Quy tắc 3: Luôn tìm kiếm nghiên cứu gốc trước khi tin dùng.')">
+                <span class="opt-key">B</span>
+                <span>Tra cứu lại nguồn gốc bài nghiên cứu trên các báo chính thống để xác minh.</span>
+              </button>
+            </div>
+            <div class="feedback-box" id="fb-r3"></div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Quy tắc 3</span>
+          <span>Trang 5 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 6: QUY TẮC 4 ================= -->
+      <div class="page right" id="page-6">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">QUY TẮC 4</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 6</span>
+          </div>
+
+          <h2 class="rule-title">⚖️ AI CŨNG CÓ THỂ THIÊN VỊ</h2>
+
+          <div class="content-box" style="margin-top: 10px;">
+            <div class="box-title"><i class="fa-solid fa-circle-exclamation"></i> Vấn đề & Rủi ro</div>
+            <p><strong>Sự thật:</strong> <code>DỮ LIỆU → HUẤN LUYỆN → MÔ HÌNH → KẾT QUẢ</code></p>
+            <p>NIST & UNESCO cảnh báo: Nếu dữ liệu huấn luyện thiên lệch, AI sẽ kế thừa và củng cố các định kiến về giới tính, chủng tộc, văn hóa.</p>
+          </div>
+
+          <div class="content-box">
+            <div class="box-title"><i class="fa-solid fa-circle-check"></i> Cách áp dụng</div>
+            <p>Khi nhận kết quả từ AI, hãy tự hỏi: <em>Nhóm đối tượng nào có thể đang bị thiếu đại diện? AI có đang nhìn vấn đề từ góc nhìn chủ quan không?</em></p>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">CÂU NHỚ QUY TẮC 4</div>
+            <div class="remember-text">“AI học từ dữ liệu của con người → AI có thể mang thiên kiến của con người.”</div>
+          </div>
+
+          <!-- Khung ảnh mẫu -->
+          <div class="media-section-title"><i class="fa-solid fa-image"></i> Khung Trống Chèn Ảnh</div>
+          <div class="media-grid">
+            <div class="media-slot" id="slot-r4-img1">
+              <button class="remove-media-btn" onclick="removeMedia('slot-r4-img1')"><i class="fa-solid fa-xmark"></i></button>
+              <div class="slot-content">
+                <i class="fa-solid fa-scale-unbalanced slot-icon"></i>
+                <p class="slot-label">Ảnh thiên kiến thuật toán</p>
+              </div>
+              <input type="file" accept="image/*" onchange="handleImageUpload(event, 'slot-r4-img1')">
+              <img class="media-preview" alt="Minh họa quy tắc 4">
+            </div>
+          </div>
+
+          <!-- Video Tình huống Centered -->
+          <div class="media-section-title"><i class="fa-solid fa-video"></i> Video Tình Huống</div>
+          <div class="video-container-box" id="vid-box-r4">
+            <div class="video-input-tabs">
+              <button class="tab-btn active" onclick="switchVideoTab('vid-box-r4', 'file')">Tải file video</button>
+              <button class="tab-btn" onclick="switchVideoTab('vid-box-r4', 'url')">Link YouTube</button>
+            </div>
+            <div class="video-input-group file-group">
+              <input type="file" accept="video/*" onchange="handleVideoUpload(event, 'vid-box-r4')" style="font-size: 0.8rem;">
+            </div>
+            <div class="video-input-group url-group" style="display: none;">
+              <input type="text" class="video-url-input" placeholder="Dán link YouTube tại đây..." onchange="handleVideoUrl(this, 'vid-box-r4')">
+            </div>
+            <div class="video-player-wrapper" id="player-vid-box-r4"></div>
+          </div>
+
+          <!-- Câu hỏi ứng xử -->
+          <div class="scenario-box">
+            <div class="scenario-header"><i class="fa-solid fa-circle-question"></i> Tình huống & Câu hỏi ứng xử</div>
+            <div class="question-text">Khi yêu cầu AI tạo hình ảnh "kỹ sư thành công", 10 bức ảnh AI trả về đều là nam giới da trắng. Bạn đánh giá thế nào?</div>
+            <div class="options-group">
+              <button class="option-btn" onclick="checkAnswer(this, false, 'fb-r4', '❌ Nhầm lẫn! AI không luôn khách quan vì dữ liệu đầu vào vốn mang thiên kiến.')">
+                <span class="opt-key">A</span>
+                <span>Coi đây là sự thật tuyệt đối vì AI phân tích khách quan từ Internet.</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this, true, 'fb-r4', '✅ Xuất sắc! Nhận biết được thiên kiến dữ liệu huấn luyện theo Quy tắc 4.')">
+                <span class="opt-key">B</span>
+                <span>Nhận ra dữ liệu huấn luyện của AI đang bị thiên lệch và điều chỉnh lại prompt.</span>
+              </button>
+            </div>
+            <div class="feedback-box" id="fb-r4"></div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Quy tắc 4</span>
+          <span>Trang 6 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 7: QUY TẮC 5 ================= -->
+      <div class="page left" id="page-7">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">QUY TẮC 5</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 7</span>
+          </div>
+
+          <h2 class="rule-title">©️ CÓ AI KHÔNG CÓ NGHĨA LÀ HẾT BẢN QUYỀN</h2>
+
+          <div class="content-box" style="margin-top: 10px;">
+            <div class="box-title"><i class="fa-solid fa-circle-exclamation"></i> Vấn đề & Rủi ro</div>
+            <p><strong>Suy nghĩ sai lầm:</strong> "Tôi dùng AI vẽ/viết lại nên nó hoàn toàn thuộc sở hữu của tôi."</p>
+            <p>WIPO khuyến cáo: Cần chú ý nguồn gốc dữ liệu đầu vào. Việc đưa tác phẩm của tác giả khác vào AI để biến tấu vẫn có thể xâm phạm bản quyền.</p>
+          </div>
+
+          <div class="content-box">
+            <div class="box-title"><i class="fa-solid fa-circle-check"></i> Nguyên tắc ghi nhận</div>
+            <p>Luôn kiểm tra giấy phép sử dụng (License), ghi rõ nguồn tác giả gốc và ghi nhận đóng góp của AI khi đưa vào bài nghiên cứu.</p>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">CÂU NHỚ QUY TẮC 5</div>
+            <div class="remember-text">“Dùng AI để sáng tạo, nhưng đừng quên người đã sáng tạo trước mình.”</div>
+          </div>
+
+          <!-- Khung ảnh mẫu -->
+          <div class="media-section-title"><i class="fa-solid fa-image"></i> Khung Trống Chèn Ảnh</div>
+          <div class="media-grid">
+            <div class="media-slot" id="slot-r5-img1">
+              <button class="remove-media-btn" onclick="removeMedia('slot-r5-img1')"><i class="fa-solid fa-xmark"></i></button>
+              <div class="slot-content">
+                <i class="fa-solid fa-copyright slot-icon"></i>
+                <p class="slot-label">Ảnh bản quyền & AI</p>
+              </div>
+              <input type="file" accept="image/*" onchange="handleImageUpload(event, 'slot-r5-img1')">
+              <img class="media-preview" alt="Minh họa quy tắc 5">
+            </div>
+          </div>
+
+          <!-- Video Tình huống Centered -->
+          <div class="media-section-title"><i class="fa-solid fa-video"></i> Video Tình Huống</div>
+          <div class="video-container-box" id="vid-box-r5">
+            <div class="video-input-tabs">
+              <button class="tab-btn active" onclick="switchVideoTab('vid-box-r5', 'file')">Tải file video</button>
+              <button class="tab-btn" onclick="switchVideoTab('vid-box-r5', 'url')">Link YouTube</button>
+            </div>
+            <div class="video-input-group file-group">
+              <input type="file" accept="video/*" onchange="handleVideoUpload(event, 'vid-box-r5')" style="font-size: 0.8rem;">
+            </div>
+            <div class="video-input-group url-group" style="display: none;">
+              <input type="text" class="video-url-input" placeholder="Dán link YouTube tại đây..." onchange="handleVideoUrl(this, 'vid-box-r5')">
+            </div>
+            <div class="video-player-wrapper" id="player-vid-box-r5"></div>
+          </div>
+
+          <!-- Câu hỏi ứng xử -->
+          <div class="scenario-box">
+            <div class="scenario-header"><i class="fa-solid fa-circle-question"></i> Tình huống & Câu hỏi ứng xử</div>
+            <div class="question-text">Bạn thấy một bức ảnh nghệ thuật của họa sĩ trên mạng và muốn dùng AI vẽ lại để làm poster sản phẩm dự án. Bạn cần làm gì?</div>
+            <div class="options-group">
+              <button class="option-btn" onclick="checkAnswer(this, false, 'fb-r5', '❌ Vi phạm bản quyền! Dùng AI biến tấu tranh người khác vẫn cần xin phép.')">
+                <span class="opt-key">A</span>
+                <span>Cứ đưa thẳng vào AI vẽ lại vì sau khi AI vẽ xong thì không ai nhận ra nữa.</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this, true, 'fb-r5', '✅ Rất tốt! Bạn tôn trọng quyền sở hữu trí tuệ của tác giả theo Quy tắc 5.')">
+                <span class="opt-key">B</span>
+                <span>Kiểm tra bản quyền bức ảnh, xin phép tác giả hoặc tìm các bức ảnh có bản quyền tự do.</span>
+              </button>
+            </div>
+            <div class="feedback-box" id="fb-r5"></div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Quy tắc 5</span>
+          <span>Trang 7 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 8: QUY TẮC 6 ================= -->
+      <div class="page right" id="page-8">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">QUY TẮC 6</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 8</span>
+          </div>
+
+          <h2 class="rule-title">🎭 ĐỪNG BIẾN NGƯỜI THẬT THÀNH NHÂN VẬT GIẢ</h2>
+
+          <div class="content-box" style="margin-top: 10px;">
+            <div class="box-title"><i class="fa-solid fa-circle-exclamation"></i> Vấn đề & Rủi ro từ Deepfake</div>
+            <p><strong>Vấn đề:</strong> Dễ dàng hoán đổi khuôn mặt, giả mạo giọng nói từ video, hình ảnh của người thật.</p>
+            <p><strong>Rủi ro:</strong> FBI cảnh báo Deepfake dẫn đến lừa đảo tài chính, bôi nhọ danh dự, xâm phạm quyền riêng tư nghiêm trọng.</p>
+          </div>
+
+          <div class="content-box">
+            <div class="box-title"><i class="fa-solid fa-circle-check"></i> Nguyên tắc ứng xử</div>
+            <p><strong>Chưa có sự đồng ý của người thật → Tuyệt đối KHÔNG TẠO, KHÔNG CHIA SẺ!</strong></p>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">CÂU NHỚ QUY TẮC 6</div>
+            <div class="remember-text">“Khuôn mặt có thể là giả, nhưng hậu quả đối với người thật là thật.”</div>
+          </div>
+
+          <!-- Khung ảnh mẫu -->
+          <div class="media-section-title"><i class="fa-solid fa-image"></i> Khung Trống Chèn Ảnh</div>
+          <div class="media-grid">
+            <div class="media-slot" id="slot-r6-img1">
+              <button class="remove-media-btn" onclick="removeMedia('slot-r6-img1')"><i class="fa-solid fa-xmark"></i></button>
+              <div class="slot-content">
+                <i class="fa-solid fa-masks-theater slot-icon"></i>
+                <p class="slot-label">Ảnh cảnh báo Deepfake</p>
+              </div>
+              <input type="file" accept="image/*" onchange="handleImageUpload(event, 'slot-r6-img1')">
+              <img class="media-preview" alt="Minh họa quy tắc 6">
+            </div>
+          </div>
+
+          <!-- Video Tình huống Centered -->
+          <div class="media-section-title"><i class="fa-solid fa-video"></i> Video Tình Huống</div>
+          <div class="video-container-box" id="vid-box-r6">
+            <div class="video-input-tabs">
+              <button class="tab-btn active" onclick="switchVideoTab('vid-box-r6', 'file')">Tải file video</button>
+              <button class="tab-btn" onclick="switchVideoTab('vid-box-r6', 'url')">Link YouTube</button>
+            </div>
+            <div class="video-input-group file-group">
+              <input type="file" accept="video/*" onchange="handleVideoUpload(event, 'vid-box-r6')" style="font-size: 0.8rem;">
+            </div>
+            <div class="video-input-group url-group" style="display: none;">
+              <input type="text" class="video-url-input" placeholder="Dán link YouTube tại đây..." onchange="handleVideoUrl(this, 'vid-box-r6')">
+            </div>
+            <div class="video-player-wrapper" id="player-vid-box-r6"></div>
+          </div>
+
+          <!-- Câu hỏi ứng xử -->
+          <div class="scenario-box">
+            <div class="scenario-header"><i class="fa-solid fa-circle-question"></i> Tình huống & Câu hỏi ứng xử</div>
+            <div class="question-text">Bạn ghép mặt bạn cùng lớp vào một video meme hài hước để trêu chọc trong nhóm chat. Bạn nghĩ sao?</div>
+            <div class="options-group">
+              <button class="option-btn" onclick="checkAnswer(this, false, 'fb-r6', '❌ Cảnh báo! Dù đùa vui nhưng không xin phép vẫn xâm phạm hình ảnh riêng tư.')">
+                <span class="opt-key">A</span>
+                <span>Không sao cả, chỉ là đùa vui trong lớp thôi mà.</span>
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this, true, 'fb-r6', '✅ Rất chuẩn! Áp dụng đúng Quy tắc 6: Cần sự đồng ý của chủ nhân hình ảnh.')">
+                <span class="opt-key">B</span>
+                <span>Phải hỏi ý kiến và được sự đồng ý của bạn đó trước khi làm hoặc đăng tải.</span>
+              </button>
+            </div>
+            <div class="feedback-box" id="fb-r6"></div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Quy tắc 6</span>
+          <span>Trang 8 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 9: QUY TẮC 7 (VỚI Ô VIDEO SIÊU LỚN & CÂU HỎI RÕ RÀNG) ================= -->
+      <div class="page left" id="page-9">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">QUY TẮC 7</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 9</span>
+          </div>
+
+          <h2 class="rule-title">🎯 AI KHÔNG CHỊU TRÁCH NHIỆM THAY BẠN</h2>
+
+          <div class="content-box" style="margin-top: 8px;">
+            <div class="box-title"><i class="fa-solid fa-circle-exclamation"></i> Vấn đề & Trách nhiệm con người</div>
+            <p><strong>Lý do bao biện:</strong> "AI tạo ra nội dung này chứ tôi có làm đâu!"</p>
+            <p><strong>Thực tế:</strong> Con người là người đưa prompt, chọn kết quả, chỉnh sửa, chia sẻ và phát tán. Mọi hậu quả pháp lý & đạo đức thuộc về người bấm gửi.</p>
+          </div>
+
+          <div class="remember-box">
+            <div class="remember-title">CÂU NHỚ QUY TẮC 7</div>
+            <div class="remember-text">“AI tạo nội dung – con người chịu trách nhiệm.”</div>
+          </div>
+
+          <!-- Khung ảnh bổ sung -->
+          <div class="media-section-title"><i class="fa-solid fa-image"></i> Khung Trống Chèn Ảnh Minh Họa</div>
+          <div class="media-grid">
+            <div class="media-slot" id="slot-r7-img1">
+              <button class="remove-media-btn" onclick="removeMedia('slot-r7-img1')"><i class="fa-solid fa-xmark"></i></button>
+              <div class="slot-content">
+                <i class="fa-solid fa-user-shield slot-icon"></i>
+                <p class="slot-label">Thêm ảnh Quy tắc 7</p>
+              </div>
+              <input type="file" accept="image/*" onchange="handleImageUpload(event, 'slot-r7-img1')">
+              <img class="media-preview" alt="Minh họa quy tắc 7">
+            </div>
+          </div>
+
+          <!-- Ô VIDEO TÌNH HUỐNG SIÊU LỚN Ở TRANG 9 -->
+          <div class="media-section-title" style="font-size: 0.9rem; color: var(--primary-color);">
+            <i class="fa-solid fa-photo-film"></i> KHUNG TRỰC QUAN: KHUNG TRỐNG TẢI VIDEO TÌNH HUỐNG TRANG 9 (Ô SIÊU LỚN)
+          </div>
+          <div class="video-container-box extra-large-video-box" id="vid-box-r7">
+            <div class="video-input-tabs">
+              <button class="tab-btn active" onclick="switchVideoTab('vid-box-r7', 'file')"><i class="fa-solid fa-file-video"></i> Tải File Video MP4/WebM từ máy</button>
+              <button class="tab-btn" onclick="switchVideoTab('vid-box-r7', 'url')"><i class="fa-brands fa-youtube"></i> Nhúng Link YouTube</button>
+            </div>
+            
+            <div class="video-input-group file-group" style="padding: 10px; background: white; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%;">
+              <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px;"><i class="fa-solid fa-upload"></i> Chọn file video tình huống Quy tắc 7 từ thiết bị của bạn:</p>
+              <input type="file" accept="video/*" onchange="handleVideoUpload(event, 'vid-box-r7')" style="font-size: 0.85rem; width: 100%;">
+            </div>
+
+            <div class="video-input-group url-group" style="display: none; padding: 10px; background: white; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%;">
+              <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px;"><i class="fa-solid fa-link"></i> Nhập hoặc dán đường dẫn YouTube:</p>
+              <input type="text" class="video-url-input" placeholder="VD: https://www.youtube.com/watch?v=..." onchange="handleVideoUrl(this, 'vid-box-r7')">
+            </div>
+
+            <!-- Khung chiếu Video siêu rộng tỷ lệ 16:9 -->
+            <div class="video-player-wrapper" id="player-vid-box-r7" style="margin-top: 12px; border: 2px solid var(--primary-color);"></div>
+          </div>
+
+          <!-- TÌNH HUỐNG VÀ CÂU HỎI ỨNG XỬ VỚI CÁC LỰA CHỌN RÕ RÀNG -->
+          <div class="scenario-box" style="border: 2px solid #86efac; background: #f0fdf4;">
+            <div class="scenario-header" style="font-size: 0.9rem;"><i class="fa-solid fa-clipboard-question"></i> TÌNH HUỐNG & CÂU HỎI ỨNG XỬ QUY TẮC 7</div>
+            <div class="question-text" style="font-size: 0.92rem; border-left-color: #16a34a;">
+              <strong>Câu hỏi:</strong> Khi bài báo cáo học tập của bạn bị phát hiện chứa thông tin sai lệch do AI tạo ra, bạn đổ lỗi hoàn toàn cho AI. Tuyên bố này đúng hay sai?
+            </div>
+            <div class="options-group">
+              <button class="option-btn" onclick="checkAnswer(this, false, 'fb-r7', '❌ Rất tiếc, câu trả lời sai! AI chỉ là công cụ hỗ trợ. Bạn mới là người duyệt và đăng tải nội dung.')">
+                <span class="opt-key">A</span>
+                <span style="font-weight: 600;">Đúng</span> — AI tạo ra văn bản nên AI phải chịu trách nhiệm chính về sự sai lệch.
+              </button>
+              <button class="option-btn" onclick="checkAnswer(this, true, 'fb-r7', '✅ Bạn trả lời đúng! Quy tắc 7 nhấn mạnh: AI tạo nội dung - Con người phải chịu trách nhiệm hoàn toàn.')">
+                <span class="opt-key">B</span>
+                <span style="font-weight: 600;">Sai</span> — Bạn là người ra quyết định sử dụng, do đó bạn phải chịu trách nhiệm kiểm tra thông tin.
+              </button>
+            </div>
+            <div class="feedback-box" id="fb-r7"></div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Quy tắc 7</span>
+          <span>Trang 9 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 10: TÌNH HUỐNG KỊCH / BIỆN LUẬN ================= -->
+      <div class="page right" id="page-10">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">KỊCH BẢN SÂN KHẤU HÓA</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 10</span>
+          </div>
+
+          <h3 style="font-family: 'Montserrat', sans-serif; color: var(--primary-color); font-size: 1.1rem; text-align: center; margin-bottom: 10px;">
+            🎭 TIỂU PHẨM BIỆN LUẬN: "MỘT CÚ CTRL + V"
+          </h3>
+
+          <div class="script-scene">CẢNH 1: TẠI PHÒNG THỰC HÀNH DỰ ÁN</div>
+          <div class="script-line">
+            <span class="script-character">Thành viên A:</span> "Code chạy bị lỗi tùm lum rồi! Để tớ Ctrl+C toàn bộ source code rồi Ctrl+V quăng cho AI nó sửa cho nhanh."
+          </div>
+          <div class="script-line">
+            <span class="script-character">Nhóm trưởng B:</span> "Khoan đã! Trong file <code>config.js</code> có chứa API Key Firebase dự án mình đấy! Xóa đi rồi mới gửi chứ!"
+          </div>
+          <div class="script-line">
+            <span class="script-character">Thành viên A:</span> "Ối dời, quan trọng hóa vấn đề! AI nó chỉ sửa code thôi chứ có thèm lấy API Key của mình đâu mà lo!" <em>*(Bấm Enter gửi)*</em>
+          </div>
+
+          <div class="script-scene">CẢNH 2: SỰ CỐ XẢY RA HÔM SAU</div>
+          <div class="script-line">
+            <span class="script-character">Thành viên B:</span> "Trời ơi! Toàn bộ Database dự án bị xóa sạch, lại còn có ai đó dùng API Key của tụi mình gửi hàng ngàn request rác!"
+          </div>
+          <div class="script-line">
+            <span class="script-character">Thành viên A:</span> "Ơ... tớ có làm gì đâu, tớ chỉ nhờ AI sửa code thôi mà..."
+          </div>
+
+          <div class="content-box" style="background: #fff7ed; border-color: #fdba74; margin-top: 12px;">
+            <div class="box-title" style="color: #c2410c;"><i class="fa-solid fa-comments"></i> BÀI HỌC TỪ TIỂU PHẨM</div>
+            <p style="font-size: 0.83rem;">
+              Chỉ với một hành động thiếu cẩn trọng (1 cú Ctrl+V), nhóm dự án đã vi phạm đồng thời:
+              <strong>Quy tắc 1</strong> (Lộ dữ liệu) & <strong>Quy tắc 2</strong> (Lộ bí mật mã nguồn).
+            </p>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Kịch bản tuyên truyền</span>
+          <span>Trang 10 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 11: TỔNG KẾT & BẢNG BỘ QUY TẮC ================= -->
+      <div class="page left" id="page-11">
+        <div>
+          <div class="page-header">
+            <span class="rule-number">TỔNG KẾT</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Trang 11</span>
+          </div>
+
+          <h3 style="font-family: 'Montserrat', sans-serif; color: var(--primary-color); font-size: 1rem; margin-bottom: 10px;">
+            📋 BẢNG TỔNG HỢP 7 CÂU NHỚ NẰM LÒNG
+          </h3>
+
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-bottom: 15px;">
+            <thead>
+              <tr style="background: var(--primary-color); color: white; text-align: left;">
+                <th style="padding: 6px; border: 1px solid #cbd5e1;">STT</th>
+                <th style="padding: 6px; border: 1px solid #cbd5e1;">Quy tắc</th>
+                <th style="padding: 6px; border: 1px solid #cbd5e1;">Câu nhớ cốt lõi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding: 5px; border: 1px solid #cbd5e1;">1</td><td style="padding: 5px; border: 1px solid #cbd5e1;">🔐 Dừng lại trước khi gửi</td><td style="padding: 5px; border: 1px solid #cbd5e1;">Không biết dữ liệu đi đâu → đừng gửi.</td></tr>
+              <tr style="background: #f8fafc;"><td style="padding: 5px; border: 1px solid #cbd5e1;">2</td><td style="padding: 5px; border: 1px solid #cbd5e1;">💻 Mã nguồn là tài sản</td><td style="padding: 5px; border: 1px solid #cbd5e1;">AI cần code, không cần bí mật.</td></tr>
+              <tr><td style="padding: 5px; border: 1px solid #cbd5e1;">3</td><td style="padding: 5px; border: 1px solid #cbd5e1;">🔎 AI nói chưa chắc đúng</td><td style="padding: 5px; border: 1px solid #cbd5e1;">AI nói, con người kiểm chứng.</td></tr>
+              <tr style="background: #f8fafc;"><td style="padding: 5px; border: 1px solid #cbd5e1;">4</td><td style="padding: 5px; border: 1px solid #cbd5e1;">⚖️ AI có thể thiên vị</td><td style="padding: 5px; border: 1px solid #cbd5e1;">AI mang thiên kiến của con người.</td></tr>
+              <tr><td style="padding: 5px; border: 1px solid #cbd5e1;">5</td><td style="padding: 5px; border: 1px solid #cbd5e1;">©️ Tôn trọng bản quyền</td><td style="padding: 5px; border: 1px solid #cbd5e1;">Dùng AI, đừng quên tác giả.</td></tr>
+              <tr style="background: #f8fafc;"><td style="padding: 5px; border: 1px solid #cbd5e1;">6</td><td style="padding: 5px; border: 1px solid #cbd5e1;">🎭 Tránh xa Deepfake</td><td style="padding: 5px; border: 1px solid #cbd5e1;">Hậu quả với người thật là thật.</td></tr>
+              <tr><td style="padding: 5px; border: 1px solid #cbd5e1;">7</td><td style="padding: 5px; border: 1px solid #cbd5e1;">🎯 Tự chịu trách nhiệm</td><td style="padding: 5px; border: 1px solid #cbd5e1;">AI tạo nội dung – con người chịu trách nhiệm.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="remember-box" style="background: #ecfdf5; border-color: #10b981;">
+            <div class="remember-title" style="color: #047857;">THÔNG ĐIỆP KẾT THÚC</div>
+            <div class="remember-text" style="color: #065f46; font-size: 0.88rem;">
+              “Hãy trở thành người làm chủ công nghệ trí tuệ nhân tạo thông minh, an toàn và trách nhiệm!”
+            </div>
+          </div>
+        </div>
+
+        <div class="page-footer">
+          <span>Tổng kết bộ quy tắc</span>
+          <span>Trang 11 / 12</span>
+        </div>
+      </div>
+
+      <!-- ================= PAGE 12: BÌA SAU ================= -->
+      <div class="page right cover-page" id="page-12">
+        <div class="cover-border">
+          <i class="fa-solid fa-shield-halved" style="font-size: 3.5rem; color: #60a5fa; margin-bottom: 10px;"></i>
+          <h2 style="font-family: 'Montserrat', sans-serif; font-size: 1.4rem; color: white;">HÃY LÀ NGƯỜI DÙNG AI VĂN MINH</h2>
+          <p style="font-size: 0.85rem; color: #cbd5e1; max-width: 85%; margin-top: 10px;">
+            Dự án nghiên cứu & tuyên truyền đạo đức AI trong học đường.
+          </p>
+          <div style="margin-top: 30px; padding: 10px; background: rgba(255,255,255,0.08); border-radius: 8px; width: 100%;">
+            <p style="font-size: 0.75rem; color: #94a3b8;">Sổ tay được thiết kế tự động chuẩn Flipbook 3D tương tác đa phương tiện.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BẢNG ĐIỀU HƯỚNG BÊN DƯỚI SỔ TAY -->
+  <div class="navigation-bar">
+    <button class="btn" id="prev-btn" onclick="prevPage()"><i class="fa-solid fa-chevron-left"></i> Trang Trước</button>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="page-indicator" id="page-indicator">Trang 1 - 2 / 12</span>
+      <select class="page-selector" id="page-select" onchange="jumpToPage(this.value)">
+        <option value="1">Trang 1: Bìa Sổ Tay</option>
+        <option value="3">Trang 3: Quy Tắc 1 (Dữ liệu)</option>
+        <option value="4">Trang 4: Quy Tắc 2 (Mã nguồn)</option>
+        <option value="5">Trang 5: Quy Tắc 3 (Kiểm chứng)</option>
+        <option value="6">Trang 6: Quy Tắc 4 (Thiên kiến)</option>
+        <option value="7">Trang 7: Quy Tắc 5 (Bản quyền)</option>
+        <option value="8">Trang 8: Quy Tắc 6 (Deepfake)</option>
+        <option value="9">Trang 9: Quy Tắc 7 (Trách nhiệm)</option>
+        <option value="10">Trang 10: Tiểu Phẩm Kịch</option>
+        <option value="11">Trang 11: Bảng Tổng Kết</option>
+        <option value="12">Trang 12: Bìa Sau</option>
+      </select>
+    </div>
+    <button class="btn" id="next-btn" onclick="nextPage()">Trang Sau <i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+
+  <!-- JAVASCRIPT XỬ LÝ LẬT TRANG & ĐA PHƯƠNG TIỆN -->
+  <script>
+    let currentPagePair = 1; // Khởi tạo với trang 1 & 2
+    const totalPages = 12;
+
+    function updatePages() {
+      // Ẩn tất cả các trang
+      for (let i = 1; i <= totalPages; i++) {
+        const p = document.getElementById(`page-${i}`);
+        if (p) p.classList.remove('active');
+      }
+
+      // Hiện cặp trang trái và phải tương ứng
+      const leftPageNum = currentPagePair;
+      const rightPageNum = currentPagePair + 1;
+
+      const leftPage = document.getElementById(`page-${leftPageNum}`);
+      const rightPage = document.getElementById(`page-${rightPageNum}`);
+
+      if (leftPage) leftPage.classList.add('active');
+      if (rightPage) rightPage.classList.add('active');
+
+      // Cập nhật thanh hiển thị số trang & Dropdown
+      document.getElementById('page-indicator').innerText = `Trang ${leftPageNum} - ${rightPageNum} / ${totalPages}`;
+      document.getElementById('page-select').value = leftPageNum;
+
+      // Cập nhật trạng thái bật/tắt nút điều hướng
+      document.getElementById('prev-btn').disabled = (currentPagePair === 1);
+      document.getElementById('next-btn').disabled = (currentPagePair >= totalPages - 1);
+    }
+
+    function nextPage() {
+      if (currentPagePair < totalPages - 1) {
+        currentPagePair += 2;
+        updatePages();
+      }
+    }
+
+    function prevPage() {
+      if (currentPagePair > 1) {
+        currentPagePair -= 2;
+        updatePages();
+      }
+    }
+
+    function jumpToPage(pageNum) {
+      let num = parseInt(pageNum);
+      if (num % 2 === 0) num -= 1; // Quy về số trang lẻ (trang bên trái)
+      currentPagePair = num;
+      updatePages();
+    }
+
+    function toggleOverview() {
+      jumpToPage(2);
+    }
+
+    // Lắng nghe phím mũi tên bàn phím để lật trang
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextPage();
+      if (e.key === 'ArrowLeft') prevPage();
+    });
+
+    /* XỬ LÝ TẢI ẢNH & XÓA ẢNH */
+    function handleImageUpload(event, slotId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const slot = document.getElementById(slotId);
+          const preview = slot.querySelector('.media-preview');
+          preview.src = e.target.result;
+          slot.classList.add('has-file');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function removeMedia(slotId) {
+      const slot = document.getElementById(slotId);
+      const fileInput = slot.querySelector('input[type="file"]');
+      const preview = slot.querySelector('.media-preview');
+      if (fileInput) fileInput.value = '';
+      if (preview) preview.src = '';
+      slot.classList.remove('has-file');
+    }
+
+    /* XỬ LÝ CHUYỂN TAB VÀ TẢI/NHÚNG VIDEO */
+    function switchVideoTab(boxId, type) {
+      const box = document.getElementById(boxId);
+      const tabs = box.querySelectorAll('.tab-btn');
+      tabs.forEach(t => t.classList.remove('active'));
+
+      if (type === 'file') {
+        tabs[0].classList.add('active');
+        box.querySelector('.file-group').style.display = 'flex';
+        box.querySelector('.url-group').style.display = 'none';
+      } else {
+        tabs[1].classList.add('active');
+        box.querySelector('.file-group').style.display = 'none';
+        box.querySelector('.url-group').style.display = 'flex';
+      }
+    }
+
+    function handleVideoUpload(event, boxId) {
+      const file = event.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        const playerWrapper = document.getElementById(`player-${boxId}`);
+        playerWrapper.innerHTML = `<video controls src="${url}"></video>`;
+        playerWrapper.classList.add('active');
+      }
+    }
+
+    function handleVideoUrl(input, boxId) {
+      const url = input.value.trim();
+      const playerWrapper = document.getElementById(`player-${boxId}`);
+      if (!url) return;
+
+      let embedUrl = '';
+      if (url.includes('youtube.com/watch?v=')) {
+        const vidId = url.split('v=')[1].split('&')[0];
+        embedUrl = `https://www.youtube.com/embed/${vidId}`;
+      } else if (url.includes('youtu.be/')) {
+        const vidId = url.split('youtu.be/')[1].split('?')[0];
+        embedUrl = `https://www.youtube.com/embed/${vidId}`;
+      } else {
+        embedUrl = url;
+      }
+
+      playerWrapper.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+      playerWrapper.classList.add('active');
+    }
+
+    /* KIỂM TRA ĐÁP ÁN CÂU HỎI ỨNG XỬ */
+    function checkAnswer(btn, isCorrect, feedbackId, message) {
+      const optionsGroup = btn.parentElement;
+      const buttons = optionsGroup.querySelectorAll('.option-btn');
+      
+      buttons.forEach(b => {
+        b.classList.remove('selected-correct', 'selected-wrong');
+      });
+
+      if (isCorrect) {
+        btn.classList.add('selected-correct');
+      } else {
+        btn.classList.add('selected-wrong');
+      }
+
+      const fb = document.getElementById(feedbackId);
+      fb.className = 'feedback-box ' + (isCorrect ? 'correct' : 'wrong');
+      fb.innerHTML = (isCorrect ? '<i class="fa-solid fa-circle-check"></i> ' : '<i class="fa-solid fa-circle-xmark"></i> ') + message;
+    }
+
+    // Tải trang lần đầu
+    updatePages();
+  </script>
+</body>
+</html>
